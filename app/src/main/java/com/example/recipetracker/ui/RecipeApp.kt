@@ -251,3 +251,5 @@ private fun AddRecipeDialog(onDismiss: () -> Unit, onAdd: (String, Int, String) 
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
+
+// Sandlot E2E retry after create-only artifact upload fix.
