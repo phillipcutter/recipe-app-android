@@ -72,7 +72,7 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
             item {
                 Text("My recipes — Sandlot E2E", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                 Text(
-                    "A little collection of things worth cooking.",
+                    "A live Sandlot preview of things worth cooking.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
