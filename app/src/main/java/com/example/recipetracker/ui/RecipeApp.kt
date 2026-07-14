@@ -70,9 +70,9 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
-                Text("My recipes", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                Text("My recipes — Sandlot E2E ✓", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                 Text(
-                    "A little collection of things worth cooking.",
+                    "A live Sandlot preview of things worth cooking.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -251,3 +251,5 @@ private fun AddRecipeDialog(onDismiss: () -> Unit, onAdd: (String, Int, String) 
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
+
+// Sandlot E2E retry after create-only artifact upload fix.
