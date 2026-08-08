@@ -1,34 +1,16 @@
-# Recipe Tracker
+# sandlot_test_flutter
 
-A compact Android sample app for tracking recipes, built with Kotlin, Jetpack Compose, Material 3, and a simple state-driven architecture.
+A new Flutter project.
 
-## Features
+## Getting Started
 
-- Browse seeded recipes in a responsive card list
-- Search by recipe name, ingredient, or tag
-- Filter by all, favorites, quick meals, or vegetarian recipes
-- Add recipes with a lightweight form
-- Favorite recipes and adjust serving counts
-- View recipe details, ingredients, steps, prep time, and difficulty
-- Empty states, summary stats, dark-mode support, and edge-to-edge UI
-- Unit tests for search/filter behavior and ingredient scaling
+This project is a starting point for a Flutter application.
 
-## Run
+A few resources to get you started if this is your first Flutter project:
 
-1. Open the repository in Android Studio.
-2. Let Gradle sync.
-3. Run the `app` configuration on an emulator or Android device (API 26+).
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-From the command line:
-
-```bash
-./gradlew test
-./gradlew assembleDebug
-```
-
-## Project layout
-
-- `app/src/main/java/.../model` — recipe data model and sample data
-- `app/src/main/java/.../ui` — Compose screens, components, and theme
-- `app/src/main/java/.../RecipeViewModel.kt` — state and user actions
-- `app/src/test` — JVM unit tests
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
