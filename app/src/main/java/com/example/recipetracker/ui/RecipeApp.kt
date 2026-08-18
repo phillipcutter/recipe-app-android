@@ -1,27 +1,23 @@
 package com.example.recipetracker.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,16 +43,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipetracker.RecipeViewModel
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
+import com.example.recipetracker.model.RecipePlan
 
 @Composable
 fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     val state = viewModel.state
     var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showCreateScreen by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
+            FloatingActionButton(onClick = { showCreateScreen = true }) {
                 Text("+", fontSize = 26.sp)
             }
         },
@@ -72,7 +68,7 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
             item {
                 Text("My recipes", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                 Text(
-                    "A little collection of things worth cooking.",
+                    "Save complex recipes locally, complete with cooking plans.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -81,7 +77,7 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
                 OutlinedTextField(
                     value = state.query,
                     onValueChange = viewModel::setQuery,
-                    label = { Text("Search recipes or ingredients") },
+                    label = { Text("Search recipes, plans, or ingredients") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -90,7 +86,7 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(RecipeFilter.entries) { filter ->
-                        androidx.compose.material3.FilterChip(
+                        FilterChip(
                             selected = state.filter == filter,
                             onClick = { viewModel.setFilter(filter) },
                             label = { Text(filter.label) },
@@ -113,14 +109,16 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     }
 
     selectedRecipe?.let { recipe ->
-        RecipeDetailDialog(recipe = recipe, onDismiss = { selectedRecipe = null })
+        val current = state.recipes.firstOrNull { it.id == recipe.id } ?: recipe
+        RecipeDetailDialog(recipe = current, onDismiss = { selectedRecipe = null })
     }
-    if (showAddDialog) {
-        AddRecipeDialog(
-            onDismiss = { showAddDialog = false },
-            onAdd = { name, minutes, tag ->
-                viewModel.addRecipe(name, minutes, tag)
-                showAddDialog = false
+    if (showCreateScreen) {
+        CreateRecipeScreen(
+            onDismiss = { showCreateScreen = false },
+            onSave = { draft ->
+                val saved = viewModel.addCustomRecipe(draft)
+                if (saved) showCreateScreen = false
+                saved
             },
         )
     }
@@ -175,8 +173,16 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onFavorite: () -> Un
                 Text("${recipe.servings} servings", style = MaterialTheme.typography.labelLarge)
                 Text("•")
                 Text(recipe.difficulty, style = MaterialTheme.typography.labelLarge)
+                Text("•")
+                Text(
+                    "${recipe.plans.size} ${if (recipe.plans.size == 1) "plan" else "plans"}",
+                    style = MaterialTheme.typography.labelLarge,
+                )
             }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (recipe.isCustom) {
+                    item { AssistChip(onClick = {}, label = { Text("Saved locally") }) }
+                }
                 items(recipe.tags.toList()) { tag -> AssistChip(onClick = {}, label = { Text(tag) }) }
             }
         }
@@ -190,7 +196,7 @@ private fun EmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("No recipes found", style = MaterialTheme.typography.titleLarge)
-        Text("Try another search or filter.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Try another search or add a custom recipe.", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -212,10 +218,9 @@ private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
                         OutlinedButton(onClick = { servings++ }) { Text("+") }
                     }
                 }
-                item { Text("Ingredients", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-                items(recipe.ingredients) { Text("• ${it.displayAmount(multiplier)}") }
-                item { HorizontalDivider(); Text("Method", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-                items(recipe.steps.indices.toList()) { index -> Text("${index + 1}. ${recipe.steps[index]}") }
+                items(recipe.plans) { plan ->
+                    PlanSection(plan = plan, multiplier = multiplier)
+                }
             }
         },
         confirmButton = { Button(onClick = onDismiss) { Text("Done") } },
@@ -223,31 +228,20 @@ private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun AddRecipeDialog(onDismiss: () -> Unit, onAdd: (String, Int, String) -> Unit) {
-    var name by remember { mutableStateOf("") }
-    var minutes by remember { mutableStateOf("30") }
-    var tag by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add a recipe") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(name, { name = it }, label = { Text("Recipe name") }, singleLine = true)
-                OutlinedTextField(
-                    minutes,
-                    { minutes = it.filter(Char::isDigit) },
-                    label = { Text("Prep time (minutes)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                )
-                OutlinedTextField(tag, { tag = it }, label = { Text("Tag (optional)") }, singleLine = true)
-            }
-        },
-        confirmButton = {
-            Button(onClick = { onAdd(name, minutes.toIntOrNull() ?: 30, tag) }, enabled = name.isNotBlank()) {
-                Text("Add")
-            }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-    )
+private fun PlanSection(plan: RecipePlan, multiplier: Double) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        HorizontalDivider()
+        Text(plan.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        if (plan.notes.isNotBlank()) {
+            Text(plan.notes, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (plan.ingredients.isNotEmpty()) {
+            Text("Ingredients", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            plan.ingredients.forEach { Text("• ${it.displayAmount(multiplier)}") }
+        }
+        if (plan.steps.isNotEmpty()) {
+            Text("Method", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            plan.steps.forEachIndexed { index, step -> Text("${index + 1}. $step") }
+        }
+    }
 }
