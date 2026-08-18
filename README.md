@@ -7,7 +7,8 @@ A compact Android sample app for tracking recipes, built with Kotlin, Jetpack Co
 - Browse seeded recipes in a responsive card list
 - Search by recipe name, ingredient, or tag
 - Filter by all, favorites, quick meals, or vegetarian recipes
-- Add recipes with a lightweight form
+- Create custom complex recipes locally, with named cooking plans, ingredients, and steps
+- Persist those recipes on-device so they survive app restarts
 - Favorite recipes and adjust serving counts
 - View recipe details, ingredients, steps, prep time, and difficulty
 - Empty states, summary stats, dark-mode support, and edge-to-edge UI

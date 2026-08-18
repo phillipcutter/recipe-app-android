@@ -10,18 +10,29 @@ object SampleRecipes {
             servings = 2,
             difficulty = "Easy",
             tags = setOf("Vegetarian", "Quick", "Italian"),
-            ingredients = listOf(
-                Ingredient(200.0, "g", "spaghetti"),
-                Ingredient(1.0, "", "lemon"),
-                Ingredient(2.0, "tbsp", "olive oil"),
-                Ingredient(40.0, "g", "parmesan"),
-                Ingredient(2.0, "tbsp", "chopped parsley"),
-            ),
-            steps = listOf(
-                "Cook the pasta until al dente, reserving a cup of pasta water.",
-                "Whisk lemon zest, juice, olive oil, and parmesan in a warm pan.",
-                "Toss with pasta and enough cooking water to make a glossy sauce.",
-                "Finish with parsley, pepper, and extra parmesan.",
+            plans = listOf(
+                RecipePlan(
+                    id = 1,
+                    name = "Pasta",
+                    notes = "Salt the water generously so the noodles season themselves.",
+                    ingredients = listOf(Ingredient(200.0, "g", "spaghetti")),
+                    steps = listOf("Cook the pasta until al dente, reserving a cup of pasta water."),
+                ),
+                RecipePlan(
+                    id = 2,
+                    name = "Lemon sauce",
+                    ingredients = listOf(
+                        Ingredient(1.0, "", "lemon"),
+                        Ingredient(2.0, "tbsp", "olive oil"),
+                        Ingredient(40.0, "g", "parmesan"),
+                        Ingredient(2.0, "tbsp", "chopped parsley"),
+                    ),
+                    steps = listOf(
+                        "Whisk lemon zest, juice, olive oil, and parmesan in a warm pan.",
+                        "Toss with pasta and enough cooking water to make a glossy sauce.",
+                        "Finish with parsley, pepper, and extra parmesan.",
+                    ),
+                ),
             ),
             isFavorite = true,
         ),
@@ -33,18 +44,30 @@ object SampleRecipes {
             servings = 4,
             difficulty = "Easy",
             tags = setOf("Vegetarian", "Meal prep", "High protein"),
-            ingredients = listOf(
-                Ingredient(2.0, "cans", "chickpeas"),
-                Ingredient(2.0, "tsp", "smoked paprika"),
-                Ingredient(2.0, "cups", "cooked brown rice"),
-                Ingredient(1.0, "", "cucumber"),
-                Ingredient(0.25, "cup", "tahini"),
-            ),
-            steps = listOf(
-                "Roast chickpeas with paprika and salt at 220°C until crisp.",
-                "Whisk tahini with lemon juice and a splash of water.",
-                "Divide rice and vegetables between bowls.",
-                "Top with chickpeas and tahini sauce.",
+            plans = listOf(
+                RecipePlan(
+                    id = 1,
+                    name = "Chickpeas",
+                    ingredients = listOf(
+                        Ingredient(2.0, "cans", "chickpeas"),
+                        Ingredient(2.0, "tsp", "smoked paprika"),
+                    ),
+                    steps = listOf("Roast chickpeas with paprika and salt at 220°C until crisp."),
+                ),
+                RecipePlan(
+                    id = 2,
+                    name = "Bowls",
+                    ingredients = listOf(
+                        Ingredient(2.0, "cups", "cooked brown rice"),
+                        Ingredient(1.0, "", "cucumber"),
+                        Ingredient(0.25, "cup", "tahini"),
+                    ),
+                    steps = listOf(
+                        "Whisk tahini with lemon juice and a splash of water.",
+                        "Divide rice and vegetables between bowls.",
+                        "Top with chickpeas and tahini sauce.",
+                    ),
+                ),
             ),
         ),
         Recipe(
@@ -55,17 +78,27 @@ object SampleRecipes {
             servings = 2,
             difficulty = "Medium",
             tags = setOf("Quick", "Seafood", "Japanese-inspired"),
-            ingredients = listOf(
-                Ingredient(2.0, "", "salmon fillets"),
-                Ingredient(1.5, "tbsp", "white miso"),
-                Ingredient(1.0, "tbsp", "soy sauce"),
-                Ingredient(1.0, "tsp", "fresh ginger"),
-                Ingredient(1.0, "tsp", "honey"),
-            ),
-            steps = listOf(
-                "Mix miso, soy, ginger, and honey into a glaze.",
-                "Brush glaze over salmon and rest for five minutes.",
-                "Broil for 7–9 minutes until caramelized and just cooked.",
+            plans = listOf(
+                RecipePlan(
+                    id = 1,
+                    name = "Glaze",
+                    ingredients = listOf(
+                        Ingredient(1.5, "tbsp", "white miso"),
+                        Ingredient(1.0, "tbsp", "soy sauce"),
+                        Ingredient(1.0, "tsp", "fresh ginger"),
+                        Ingredient(1.0, "tsp", "honey"),
+                    ),
+                    steps = listOf("Mix miso, soy, ginger, and honey into a glaze."),
+                ),
+                RecipePlan(
+                    id = 2,
+                    name = "Broil",
+                    ingredients = listOf(Ingredient(2.0, "", "salmon fillets")),
+                    steps = listOf(
+                        "Brush glaze over salmon and rest for five minutes.",
+                        "Broil for 7–9 minutes until caramelized and just cooked.",
+                    ),
+                ),
             ),
         ),
         Recipe(
@@ -76,17 +109,29 @@ object SampleRecipes {
             servings = 6,
             difficulty = "Easy",
             tags = setOf("Vegetarian", "Soup", "Freezer friendly"),
-            ingredients = listOf(
-                Ingredient(1.5, "kg", "ripe tomatoes"),
-                Ingredient(1.0, "", "yellow onion"),
-                Ingredient(4.0, "cloves", "garlic"),
-                Ingredient(3.0, "cups", "vegetable stock"),
-                Ingredient(0.5, "cup", "cream"),
-            ),
-            steps = listOf(
-                "Roast tomatoes, onion, and garlic until browned at the edges.",
-                "Simmer with stock for fifteen minutes.",
-                "Blend until smooth, stir in cream, and season to taste.",
+            plans = listOf(
+                RecipePlan(
+                    id = 1,
+                    name = "Roast",
+                    ingredients = listOf(
+                        Ingredient(1.5, "kg", "ripe tomatoes"),
+                        Ingredient(1.0, "", "yellow onion"),
+                        Ingredient(4.0, "cloves", "garlic"),
+                    ),
+                    steps = listOf("Roast tomatoes, onion, and garlic until browned at the edges."),
+                ),
+                RecipePlan(
+                    id = 2,
+                    name = "Simmer & blend",
+                    ingredients = listOf(
+                        Ingredient(3.0, "cups", "vegetable stock"),
+                        Ingredient(0.5, "cup", "cream"),
+                    ),
+                    steps = listOf(
+                        "Simmer with stock for fifteen minutes.",
+                        "Blend until smooth, stir in cream, and season to taste.",
+                    ),
+                ),
             ),
         ),
     )
