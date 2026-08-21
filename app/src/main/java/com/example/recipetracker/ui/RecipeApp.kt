@@ -1,14 +1,11 @@
 package com.example.recipetracker.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,9 +24,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,84 +49,177 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.recipetracker.RecipeUiState
 import com.example.recipetracker.RecipeViewModel
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
+import kotlinx.coroutines.launch
 
+private enum class AppTab(val label: String, val glyph: String) {
+    Recipes("Recipes", "🍳"),
+    Grocery("Grocery", "🛒"),
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     val state = viewModel.state
+    var tab by remember { mutableStateOf(AppTab.Recipes) }
     var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddRecipeDialog by remember { mutableStateOf(false) }
+    var showAddGroceryDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            NavigationBar {
+                AppTab.entries.forEach { entry ->
+                    NavigationBarItem(
+                        selected = tab == entry,
+                        onClick = { tab = entry },
+                        icon = {
+                            BadgedBox(badge = {
+                                val toBuy = state.itemsToBuy.size
+                                if (entry == AppTab.Grocery && toBuy > 0) Badge { Text("$toBuy") }
+                            }) {
+                                Text(entry.glyph, fontSize = 20.sp)
+                            }
+                        },
+                        label = { Text(entry.label) },
+                    )
+                }
+            }
+        },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
+            FloatingActionButton(
+                onClick = {
+                    when (tab) {
+                        AppTab.Recipes -> showAddRecipeDialog = true
+                        AppTab.Grocery -> showAddGroceryDialog = true
+                    }
+                },
+            ) {
                 Text("+", fontSize = 26.sp)
             }
         },
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 20.dp, end = 20.dp, top = 20.dp, bottom = 100.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            item {
-                Text("My recipes", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                Text(
-                    "A little collection of things worth cooking.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            item { StatsRow(state.recipes.size, state.favoriteCount, state.averagePrep) }
-            item {
-                OutlinedTextField(
-                    value = state.query,
-                    onValueChange = viewModel::setQuery,
-                    label = { Text("Search recipes or ingredients") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                )
-            }
-            item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(RecipeFilter.entries) { filter ->
-                        androidx.compose.material3.FilterChip(
-                            selected = state.filter == filter,
-                            onClick = { viewModel.setFilter(filter) },
-                            label = { Text(filter.label) },
-                        )
-                    }
-                }
-            }
-            if (state.visibleRecipes.isEmpty()) {
-                item { EmptyState() }
-            } else {
-                items(state.visibleRecipes, key = { it.id }) { recipe ->
-                    RecipeCard(
-                        recipe = recipe,
-                        onClick = { selectedRecipe = recipe },
-                        onFavorite = { viewModel.toggleFavorite(recipe.id) },
-                    )
-                }
-            }
+        val contentPadding = PaddingValues(
+            start = 20.dp,
+            end = 20.dp,
+            top = padding.calculateTopPadding() + 20.dp,
+            bottom = padding.calculateBottomPadding() + 100.dp,
+        )
+        when (tab) {
+            AppTab.Recipes -> RecipeListScreen(
+                state = state,
+                contentPadding = contentPadding,
+                onQueryChange = viewModel::setQuery,
+                onFilterChange = viewModel::setFilter,
+                onSelect = { selectedRecipe = it },
+                onFavorite = { viewModel.toggleFavorite(it.id) },
+            )
+
+            AppTab.Grocery -> GroceryScreen(
+                state = state,
+                contentPadding = contentPadding,
+                onToggle = viewModel::toggleGroceryItem,
+                onRemove = viewModel::removeGroceryItem,
+                onClearPurchased = viewModel::clearPurchasedItems,
+            )
         }
     }
 
     selectedRecipe?.let { recipe ->
-        RecipeDetailDialog(recipe = recipe, onDismiss = { selectedRecipe = null })
-    }
-    if (showAddDialog) {
-        AddRecipeDialog(
-            onDismiss = { showAddDialog = false },
-            onAdd = { name, minutes, tag ->
-                viewModel.addRecipe(name, minutes, tag)
-                showAddDialog = false
+        RecipeDetailDialog(
+            recipe = recipe,
+            onDismiss = { selectedRecipe = null },
+            onAddToGroceryList = { servings ->
+                viewModel.addRecipeToGroceryList(recipe, servings)
+                selectedRecipe = null
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        "Added ${recipe.ingredients.size} ingredients to your grocery list"
+                    )
+                }
             },
         )
+    }
+    if (showAddRecipeDialog) {
+        AddRecipeDialog(
+            onDismiss = { showAddRecipeDialog = false },
+            onAdd = { name, minutes, tag ->
+                viewModel.addRecipe(name, minutes, tag)
+                showAddRecipeDialog = false
+            },
+        )
+    }
+    if (showAddGroceryDialog) {
+        AddGroceryItemDialog(
+            onDismiss = { showAddGroceryDialog = false },
+            onAdd = { text ->
+                viewModel.addGroceryItem(text)
+                showAddGroceryDialog = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun RecipeListScreen(
+    state: RecipeUiState,
+    contentPadding: PaddingValues,
+    onQueryChange: (String) -> Unit,
+    onFilterChange: (RecipeFilter) -> Unit,
+    onSelect: (Recipe) -> Unit,
+    onFavorite: (Recipe) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        item {
+            Text("My recipes", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            Text(
+                "A little collection of things worth cooking.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        item { StatsRow(state.recipes.size, state.favoriteCount, state.averagePrep) }
+        item {
+            OutlinedTextField(
+                value = state.query,
+                onValueChange = onQueryChange,
+                label = { Text("Search recipes or ingredients") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+            )
+        }
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(RecipeFilter.entries) { filter ->
+                    androidx.compose.material3.FilterChip(
+                        selected = state.filter == filter,
+                        onClick = { onFilterChange(filter) },
+                        label = { Text(filter.label) },
+                    )
+                }
+            }
+        }
+        if (state.visibleRecipes.isEmpty()) {
+            item { EmptyState() }
+        } else {
+            items(state.visibleRecipes, key = { it.id }) { recipe ->
+                RecipeCard(
+                    recipe = recipe,
+                    onClick = { onSelect(recipe) },
+                    onFavorite = { onFavorite(recipe) },
+                )
+            }
+        }
     }
 }
 
@@ -195,7 +292,11 @@ private fun EmptyState() {
 }
 
 @Composable
-private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
+private fun RecipeDetailDialog(
+    recipe: Recipe,
+    onDismiss: () -> Unit,
+    onAddToGroceryList: (Int) -> Unit,
+) {
     var servings by remember(recipe.id) { mutableIntStateOf(recipe.servings) }
     val multiplier = servings.toDouble() / recipe.servings
     AlertDialog(
@@ -214,6 +315,14 @@ private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
                 }
                 item { Text("Ingredients", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
                 items(recipe.ingredients) { Text("• ${it.displayAmount(multiplier)}") }
+                item {
+                    OutlinedButton(
+                        onClick = { onAddToGroceryList(servings) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("🛒  Add ingredients to grocery list")
+                    }
+                }
                 item { HorizontalDivider(); Text("Method", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
                 items(recipe.steps.indices.toList()) { index -> Text("${index + 1}. ${recipe.steps[index]}") }
             }

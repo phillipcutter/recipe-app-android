@@ -4,20 +4,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.recipetracker.model.GroceryItem
 import com.example.recipetracker.model.Ingredient
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
 import com.example.recipetracker.model.SampleRecipes
 import com.example.recipetracker.model.matching
+import com.example.recipetracker.model.parseGroceryInput
+import com.example.recipetracker.model.plusItem
+import com.example.recipetracker.model.plusRecipe
+import com.example.recipetracker.model.purchased
+import com.example.recipetracker.model.toBuy
 
 data class RecipeUiState(
     val recipes: List<Recipe> = SampleRecipes.all,
     val query: String = "",
     val filter: RecipeFilter = RecipeFilter.All,
+    val groceryItems: List<GroceryItem> = emptyList(),
 ) {
     val visibleRecipes: List<Recipe> get() = recipes.matching(query, filter)
     val favoriteCount: Int get() = recipes.count { it.isFavorite }
     val averagePrep: Int get() = recipes.map { it.prepMinutes }.average().toInt()
+    val itemsToBuy: List<GroceryItem> get() = groceryItems.toBuy()
+    val purchasedItems: List<GroceryItem> get() = groceryItems.purchased()
 }
 
 class RecipeViewModel : ViewModel() {
@@ -48,5 +57,30 @@ class RecipeViewModel : ViewModel() {
             steps = listOf("Add preparation steps for this recipe."),
         )
         state = state.copy(recipes = listOf(recipe) + state.recipes)
+    }
+
+    /** Quick-add from the grocery screen: one line of free text becomes one entry. */
+    fun addGroceryItem(text: String) {
+        val item = parseGroceryInput(text) ?: return
+        state = state.copy(groceryItems = state.groceryItems.plusItem(item))
+    }
+
+    /** Sends a whole recipe's ingredients to the list, scaled to the chosen servings. */
+    fun addRecipeToGroceryList(recipe: Recipe, servings: Int = recipe.servings) {
+        state = state.copy(groceryItems = state.groceryItems.plusRecipe(recipe, servings))
+    }
+
+    fun toggleGroceryItem(id: Long) {
+        state = state.copy(groceryItems = state.groceryItems.map {
+            if (it.id == id) it.copy(isPurchased = !it.isPurchased) else it
+        })
+    }
+
+    fun removeGroceryItem(id: Long) {
+        state = state.copy(groceryItems = state.groceryItems.filterNot { it.id == id })
+    }
+
+    fun clearPurchasedItems() {
+        state = state.copy(groceryItems = state.groceryItems.toBuy())
     }
 }
