@@ -10,6 +10,8 @@ A compact Android sample app for tracking recipes, built with Kotlin, Jetpack Co
 - Add recipes with a lightweight form
 - Favorite recipes and adjust serving counts
 - View recipe details, ingredients, steps, prep time, and difficulty
+- Grocery list: add items, check them off at the store, and clear what you already bought
+- Send a recipe’s ingredients to the grocery list in one tap
 - Empty states, summary stats, dark-mode support, and edge-to-edge UI
 - Unit tests for search/filter behavior and ingredient scaling
 
