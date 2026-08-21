@@ -4,20 +4,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.recipetracker.model.GroceryItem
 import com.example.recipetracker.model.Ingredient
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
+import com.example.recipetracker.model.SampleGroceries
 import com.example.recipetracker.model.SampleRecipes
+import com.example.recipetracker.model.adding
+import com.example.recipetracker.model.addingIngredients
+import com.example.recipetracker.model.clearingChecked
 import com.example.recipetracker.model.matching
+import com.example.recipetracker.model.removing
+import com.example.recipetracker.model.toggling
+import com.example.recipetracker.model.uncheckedCount
+
+enum class AppTab { Recipes, Grocery }
 
 data class RecipeUiState(
     val recipes: List<Recipe> = SampleRecipes.all,
+    val groceryItems: List<GroceryItem> = SampleGroceries.starter,
     val query: String = "",
     val filter: RecipeFilter = RecipeFilter.All,
+    val tab: AppTab = AppTab.Recipes,
 ) {
     val visibleRecipes: List<Recipe> get() = recipes.matching(query, filter)
     val favoriteCount: Int get() = recipes.count { it.isFavorite }
     val averagePrep: Int get() = recipes.map { it.prepMinutes }.average().toInt()
+    val groceryUncheckedCount: Int get() = groceryItems.uncheckedCount()
 }
 
 class RecipeViewModel : ViewModel() {
@@ -48,5 +61,30 @@ class RecipeViewModel : ViewModel() {
             steps = listOf("Add preparation steps for this recipe."),
         )
         state = state.copy(recipes = listOf(recipe) + state.recipes)
+    }
+
+    fun setTab(tab: AppTab) { state = state.copy(tab = tab) }
+
+    fun addGroceryItem(name: String, note: String = "") {
+        state = state.copy(groceryItems = state.groceryItems.adding(name, note))
+    }
+
+    fun toggleGroceryItem(id: Long) {
+        state = state.copy(groceryItems = state.groceryItems.toggling(id))
+    }
+
+    fun removeGroceryItem(id: Long) {
+        state = state.copy(groceryItems = state.groceryItems.removing(id))
+    }
+
+    fun clearCheckedGroceryItems() {
+        state = state.copy(groceryItems = state.groceryItems.clearingChecked())
+    }
+
+    fun addIngredientsToGrocery(ingredients: List<Ingredient>) {
+        state = state.copy(
+            groceryItems = state.groceryItems.addingIngredients(ingredients),
+            tab = AppTab.Grocery,
+        )
     }
 }
