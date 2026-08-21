@@ -13,6 +13,19 @@ A compact Android sample app for tracking recipes, built with Kotlin, Jetpack Co
 - Empty states, summary stats, dark-mode support, and edge-to-edge UI
 - Unit tests for search/filter behavior and ingredient scaling
 
+### Grocery list
+
+- A bottom navigation bar switches between **Recipes** and **Groceries**; the tab
+  shows how many items are still to buy
+- Add items by hand with an optional quantity, or send a whole recipe's
+  ingredients to the list from the recipe detail dialog
+- Ingredients are added at the serving size currently shown in the dialog, so
+  scaling a recipe to six servings adds six servings' worth
+- Items already on the list are never added twice (matched case-insensitively)
+- Check items off as you shop, filter by **All / To buy / In cart**, remove a
+  single item, or clear everything in the cart at once
+- Each item remembers the recipe it came from
+
 ## Run
 
 1. Open the repository in Android Studio.
@@ -28,7 +41,7 @@ From the command line:
 
 ## Project layout
 
-- `app/src/main/java/.../model` — recipe data model and sample data
+- `app/src/main/java/.../model` — recipe and grocery data models, sample data
 - `app/src/main/java/.../ui` — Compose screens, components, and theme
 - `app/src/main/java/.../RecipeViewModel.kt` — state and user actions
 - `app/src/test` — JVM unit tests
