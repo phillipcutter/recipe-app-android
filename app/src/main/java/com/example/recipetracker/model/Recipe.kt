@@ -5,12 +5,16 @@ data class Ingredient(
     val unit: String,
     val name: String,
 ) {
-    fun displayAmount(multiplier: Double = 1.0): String {
+    /** Just the amount and unit, e.g. "200 g" — useful for a grocery line. */
+    fun displayQuantity(multiplier: Double = 1.0): String {
         val scaled = amount * multiplier
         val number = if (scaled % 1.0 == 0.0) scaled.toInt().toString()
         else "%.1f".format(scaled)
-        return listOf(number, unit, name).filter { it.isNotBlank() }.joinToString(" ")
+        return listOf(number, unit).filter { it.isNotBlank() }.joinToString(" ")
     }
+
+    fun displayAmount(multiplier: Double = 1.0): String =
+        listOf(displayQuantity(multiplier), name).filter { it.isNotBlank() }.joinToString(" ")
 }
 
 data class Recipe(
