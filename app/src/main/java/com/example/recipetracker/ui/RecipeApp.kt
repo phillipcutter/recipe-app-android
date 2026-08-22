@@ -54,6 +54,7 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     val state = viewModel.state
     var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var remixSource by remember { mutableStateOf<Recipe?>(null) }
 
     Scaffold(
         floatingActionButton = {
@@ -113,7 +114,24 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     }
 
     selectedRecipe?.let { recipe ->
-        RecipeDetailDialog(recipe = recipe, onDismiss = { selectedRecipe = null })
+        RecipeDetailDialog(
+            recipe = recipe,
+            onDismiss = { selectedRecipe = null },
+            onRemix = {
+                remixSource = recipe
+                selectedRecipe = null
+            },
+        )
+    }
+    remixSource?.let { source ->
+        RemixRecipeDialog(
+            source = source,
+            onDismiss = { remixSource = null },
+            onRemix = { name, twist, extra ->
+                viewModel.remixRecipe(source.id, name, twist, extra)
+                remixSource = null
+            },
+        )
     }
     if (showAddDialog) {
         AddRecipeDialog(
@@ -158,6 +176,13 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onFavorite: () -> Un
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
                     Text(recipe.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    recipe.remixedFrom?.let { original ->
+                        Text(
+                            "Remix of $original",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                     Text(
                         recipe.description,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -195,7 +220,7 @@ private fun EmptyState() {
 }
 
 @Composable
-private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
+private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit, onRemix: () -> Unit) {
     var servings by remember(recipe.id) { mutableIntStateOf(recipe.servings) }
     val multiplier = servings.toDouble() / recipe.servings
     AlertDialog(
@@ -204,6 +229,15 @@ private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 item { Text(recipe.description, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                if (recipe.remixedFrom != null) {
+                    item {
+                        Text(
+                            "Remix of ${recipe.remixedFrom}",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Servings", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
@@ -219,6 +253,55 @@ private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
             }
         },
         confirmButton = { Button(onClick = onDismiss) { Text("Done") } },
+        dismissButton = { TextButton(onClick = onRemix) { Text("Remix") } },
+    )
+}
+
+@Composable
+private fun RemixRecipeDialog(
+    source: Recipe,
+    onDismiss: () -> Unit,
+    onRemix: (name: String, twist: String, extraIngredient: String) -> Unit,
+) {
+    var name by remember { mutableStateOf("${source.name} remix") }
+    var twist by remember { mutableStateOf("") }
+    var extra by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Remix ${source.name}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "Keep the original method, add your own twist, and save it as a new recipe.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    name,
+                    { name = it },
+                    label = { Text("Remix name") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    twist,
+                    { twist = it },
+                    label = { Text("Your twist") },
+                    placeholder = { Text("e.g. add chili flakes and swap parsley for basil") },
+                )
+                OutlinedTextField(
+                    extra,
+                    { extra = it },
+                    label = { Text("Extra ingredient (optional)") },
+                    singleLine = true,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onRemix(name, twist, extra) },
+                enabled = name.isNotBlank(),
+            ) { Text("Save remix") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
 
