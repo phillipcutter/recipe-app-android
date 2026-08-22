@@ -241,6 +241,11 @@ private fun RecipeDetailDialog(
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    item {
+                        Button(onClick = { choosingRemix = true }, modifier = Modifier.fillMaxWidth()) {
+                            Text("Remix this recipe")
+                        }
+                    }
                     item { Text(recipe.description, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     if (originalName != null) {
                         item {
@@ -276,8 +281,6 @@ private fun RecipeDetailDialog(
         dismissButton = {
             if (choosingRemix) {
                 TextButton(onClick = { choosingRemix = false }) { Text("Back") }
-            } else {
-                TextButton(onClick = { choosingRemix = true }) { Text("Remix") }
             }
         },
     )
