@@ -1,14 +1,12 @@
 package com.example.recipetracker.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,6 +47,7 @@ import com.example.recipetracker.RecipeViewModel
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     val state = viewModel.state
@@ -89,8 +88,8 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
                 )
             }
             item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(RecipeFilter.entries) { filter ->
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RecipeFilter.entries.forEach { filter ->
                         androidx.compose.material3.FilterChip(
                             selected = state.filter == filter,
                             onClick = { viewModel.setFilter(filter) },
