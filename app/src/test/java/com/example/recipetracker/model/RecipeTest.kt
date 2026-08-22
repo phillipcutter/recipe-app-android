@@ -29,4 +29,41 @@ class RecipeTest {
         assertEquals("3 cups flour", ingredient.displayAmount(2.0))
         assertEquals("0.8 cups flour", ingredient.displayAmount(0.5))
     }
+
+    @Test
+    fun `spicy remix adds heat ingredients and remix tag`() {
+        val original = SampleRecipes.all.first { it.name == "Lemon Herb Pasta" }
+        val remixed = original.remix(RemixStyle.Spicy)
+
+        assertEquals("Lemon Herb Pasta (Spicy remix)", remixed.name)
+        assertTrue(remixed.tags.contains("Remix"))
+        assertTrue(remixed.tags.contains("Spicy"))
+        assertTrue(remixed.ingredients.any { it.name.contains("chili") })
+        assertEquals("Medium", remixed.difficulty)
+        assertTrue(remixed.steps.any { it.contains("chili", ignoreCase = true) })
+    }
+
+    @Test
+    fun `citrus remix merges extra lemon into existing lemon`() {
+        val original = SampleRecipes.all.first { it.name == "Lemon Herb Pasta" }
+        val remixed = original.remix(RemixStyle.Citrus)
+        val lemon = remixed.ingredients.first { it.name == "lemon" }
+
+        assertEquals(2.0, lemon.amount, 0.001)
+        assertTrue(remixed.ingredients.any { it.name.contains("zest") })
+    }
+
+    @Test
+    fun `remixes filter matches remixed recipes`() {
+        val original = SampleRecipes.all.first()
+        val remixed = original.copy(
+            id = 99,
+            name = original.remix(RemixStyle.Creamy).name,
+            remixedFromId = original.id,
+            tags = original.tags + "Remix",
+        )
+        val recipes = SampleRecipes.all + remixed
+
+        assertEquals(listOf(remixed.name), recipes.matching("", RecipeFilter.Remixes).map { it.name })
+    }
 }

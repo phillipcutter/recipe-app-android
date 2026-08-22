@@ -48,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipetracker.RecipeViewModel
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
+import com.example.recipetracker.model.RemixStyle
 
 @Composable
 fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
@@ -113,7 +114,15 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     }
 
     selectedRecipe?.let { recipe ->
-        RecipeDetailDialog(recipe = recipe, onDismiss = { selectedRecipe = null })
+        RecipeDetailDialog(
+            recipe = recipe,
+            originalName = state.recipes.firstOrNull { it.id == recipe.remixedFromId }?.name,
+            onDismiss = { selectedRecipe = null },
+            onRemix = { style ->
+                val created = viewModel.remixRecipe(recipe.id, style)
+                selectedRecipe = created
+            },
+        )
     }
     if (showAddDialog) {
         AddRecipeDialog(
@@ -179,6 +188,13 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onFavorite: () -> Un
             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 items(recipe.tags.toList()) { tag -> AssistChip(onClick = {}, label = { Text(tag) }) }
             }
+            if (recipe.remixedFromId != null) {
+                Text(
+                    "Remix of another recipe",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
         }
     }
 }
@@ -195,30 +211,78 @@ private fun EmptyState() {
 }
 
 @Composable
-private fun RecipeDetailDialog(recipe: Recipe, onDismiss: () -> Unit) {
+private fun RecipeDetailDialog(
+    recipe: Recipe,
+    originalName: String?,
+    onDismiss: () -> Unit,
+    onRemix: (RemixStyle) -> Unit,
+) {
     var servings by remember(recipe.id) { mutableIntStateOf(recipe.servings) }
+    var choosingRemix by remember(recipe.id) { mutableStateOf(false) }
+    var selectedStyle by remember(recipe.id) { mutableStateOf(RemixStyle.Spicy) }
     val multiplier = servings.toDouble() / recipe.servings
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(recipe.name) },
+        title = { Text(if (choosingRemix) "Remix ${recipe.name}" else recipe.name) },
         text = {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                item { Text(recipe.description, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                item {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Servings", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                        OutlinedButton(onClick = { if (servings > 1) servings-- }) { Text("−") }
-                        Text("$servings", modifier = Modifier.padding(horizontal = 14.dp))
-                        OutlinedButton(onClick = { servings++ }) { Text("+") }
+            if (choosingRemix) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        "Spin this recipe into a new variation. Ingredients and steps update to match the style.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    RemixStyle.entries.forEach { style ->
+                        androidx.compose.material3.FilterChip(
+                            selected = selectedStyle == style,
+                            onClick = { selectedStyle = style },
+                            label = { Text(style.label) },
+                        )
                     }
                 }
-                item { Text("Ingredients", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-                items(recipe.ingredients) { Text("• ${it.displayAmount(multiplier)}") }
-                item { HorizontalDivider(); Text("Method", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-                items(recipe.steps.indices.toList()) { index -> Text("${index + 1}. ${recipe.steps[index]}") }
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    item {
+                        Button(onClick = { choosingRemix = true }, modifier = Modifier.fillMaxWidth()) {
+                            Text("Remix this recipe")
+                        }
+                    }
+                    item { Text(recipe.description, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    if (originalName != null) {
+                        item {
+                            Text(
+                                "Remixed from $originalName",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        }
+                    }
+                    item {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Servings", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                            OutlinedButton(onClick = { if (servings > 1) servings-- }) { Text("−") }
+                            Text("$servings", modifier = Modifier.padding(horizontal = 14.dp))
+                            OutlinedButton(onClick = { servings++ }) { Text("+") }
+                        }
+                    }
+                    item { Text("Ingredients", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                    items(recipe.ingredients) { Text("• ${it.displayAmount(multiplier)}") }
+                    item { HorizontalDivider(); Text("Method", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                    items(recipe.steps.indices.toList()) { index -> Text("${index + 1}. ${recipe.steps[index]}") }
+                }
             }
         },
-        confirmButton = { Button(onClick = onDismiss) { Text("Done") } },
+        confirmButton = {
+            if (choosingRemix) {
+                Button(onClick = { onRemix(selectedStyle) }) { Text("Save remix") }
+            } else {
+                Button(onClick = onDismiss) { Text("Done") }
+            }
+        },
+        dismissButton = {
+            if (choosingRemix) {
+                TextButton(onClick = { choosingRemix = false }) { Text("Back") }
+            }
+        },
     )
 }
 
