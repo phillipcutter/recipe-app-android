@@ -115,15 +115,14 @@ fun RecipeApp(viewModel: RecipeViewModel = viewModel()) {
     }
 
     selectedRecipe?.let { recipe ->
-        RecipeDetailDialog(
-            recipe = recipe,
-            originalName = state.recipes.firstOrNull { it.id == recipe.remixedFromId }?.name,
-            onDismiss = { selectedRecipe = null },
-            onRemix = {
-                remixSource = recipe
-                selectedRecipe = null
-            },
-        )
+        if (remixSource == null) {
+            RecipeDetailDialog(
+                recipe = recipe,
+                originalName = state.recipes.firstOrNull { it.id == recipe.remixedFromId }?.name,
+                onDismiss = { selectedRecipe = null },
+                onRemix = { remixSource = recipe },
+            )
+        }
     }
     remixSource?.let { source ->
         RemixRecipeDialog(
