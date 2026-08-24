@@ -1,18 +1,20 @@
-package com.example.recipetracker
+package com.example.lumennotes
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.recipetracker.ui.RecipeApp
-import com.example.recipetracker.ui.theme.RecipeTrackerTheme
+import com.example.lumennotes.ui.NotesApp
+import com.example.lumennotes.ui.theme.LumenNotesTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         setContent {
-            RecipeTrackerTheme { RecipeApp() }
+            LumenNotesTheme {
+                NotesApp()
+            }
         }
     }
 }

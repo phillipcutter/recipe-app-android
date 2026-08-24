@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RecipeTracker"
+rootProject.name = "LumenNotes"
 include(":app")

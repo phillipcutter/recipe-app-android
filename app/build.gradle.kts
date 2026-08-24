@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.recipetracker"
+    namespace = "com.example.lumennotes"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.recipetracker"
+        applicationId = "com.example.lumennotes"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -50,5 +50,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     testImplementation(libs.junit)
+    // Real org.json for unit tests — the android.jar stub throws "not mocked".
+    testImplementation(libs.json)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

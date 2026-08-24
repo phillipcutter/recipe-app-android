@@ -1,34 +1,29 @@
-# Recipe Tracker
+# Lumen Notes
 
-A compact Android sample app for tracking recipes, built with Kotlin, Jetpack Compose, Material 3, and a simple state-driven architecture.
+A small, fast Android note-taking app built with Jetpack Compose and Material 3.
 
 ## Features
 
-- Browse seeded recipes in a responsive card list
-- Search by recipe name, ingredient, or tag
-- Filter by all, favorites, quick meals, or vegetarian recipes
-- Add recipes with a lightweight form
-- Favorite recipes and adjust serving counts
-- View recipe details, ingredients, steps, prep time, and difficulty
-- Empty states, summary stats, dark-mode support, and edge-to-edge UI
-- Unit tests for search/filter behavior and ingredient scaling
+- **Notes with accents** — eight colors, shown as a spine on each card and a chip below it.
+- **Pin** — pinned notes sort to the top; everything else is newest-first.
+- **Search** — filters live over titles and bodies.
+- **Delete with undo** — a snackbar restores the note.
+- **Persistence** — notes are stored as JSON in the app's files directory, loaded on launch.
+- Light and dark themes, edge-to-edge, no third-party runtime dependencies.
 
-## Run
+## Build
 
-1. Open the repository in Android Studio.
-2. Let Gradle sync.
-3. Run the `app` configuration on an emulator or Android device (API 26+).
-
-From the command line:
-
-```bash
-./gradlew test
-./gradlew assembleDebug
+```
+./gradlew :app:assembleDebug     # app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:testDebugUnitTest # unit tests for note model + ordering
 ```
 
-## Project layout
+## Layout
 
-- `app/src/main/java/.../model` — recipe data model and sample data
-- `app/src/main/java/.../ui` — Compose screens, components, and theme
-- `app/src/main/java/.../RecipeViewModel.kt` — state and user actions
-- `app/src/test` — JVM unit tests
+| Path | What it holds |
+| --- | --- |
+| `model/Note.kt` | Note data class, display/search helpers, JSON round trip, sort order |
+| `data/NoteStore.kt` | File-backed JSON persistence |
+| `NotesViewModel.kt` | List state, search query, upsert / pin / delete / undo |
+| `ui/NotesApp.kt` | List and editor screens |
+| `ui/theme/Theme.kt` | Color schemes and the accent palette |
