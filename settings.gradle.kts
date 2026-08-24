@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "RecipeTracker"
 include(":app")
+include(":notes")
