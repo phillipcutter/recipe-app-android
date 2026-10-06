@@ -33,6 +33,25 @@ class RecipeViewModel : ViewModel() {
         })
     }
 
+    fun remixRecipe(
+        sourceId: Long,
+        newName: String,
+        twist: String,
+        extraIngredientName: String,
+    ) {
+        val source = state.recipes.find { it.id == sourceId } ?: return
+        val extra = extraIngredientName.trim().takeIf { it.isNotEmpty() }?.let {
+            Ingredient(1.0, "", it)
+        }
+        val remixed = source.remix(
+            newId = (state.recipes.maxOfOrNull { it.id } ?: 0) + 1,
+            newName = newName,
+            twist = twist,
+            extraIngredient = extra,
+        )
+        state = state.copy(recipes = listOf(remixed) + state.recipes)
+    }
+
     fun addRecipe(name: String, minutes: Int, tag: String) {
         val cleanedName = name.trim()
         if (cleanedName.isEmpty()) return
