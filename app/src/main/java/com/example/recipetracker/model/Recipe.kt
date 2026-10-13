@@ -24,6 +24,7 @@ data class Recipe(
     val ingredients: List<Ingredient>,
     val steps: List<String>,
     val isFavorite: Boolean = false,
+    val remixedFromId: Long? = null,
 )
 
 enum class RecipeFilter(val label: String) {
@@ -31,6 +32,7 @@ enum class RecipeFilter(val label: String) {
     Favorites("Favorites"),
     Quick("Under 30 min"),
     Vegetarian("Vegetarian"),
+    Remixes("Remixes"),
 }
 
 fun List<Recipe>.matching(query: String, filter: RecipeFilter): List<Recipe> {
@@ -45,6 +47,7 @@ fun List<Recipe>.matching(query: String, filter: RecipeFilter): List<Recipe> {
             RecipeFilter.Favorites -> recipe.isFavorite
             RecipeFilter.Quick -> recipe.prepMinutes <= 30
             RecipeFilter.Vegetarian -> "vegetarian" in recipe.tags.map { it.lowercase() }
+            RecipeFilter.Remixes -> recipe.remixedFromId != null || "remix" in recipe.tags.map { it.lowercase() }
         }
         matchesQuery && matchesFilter
     }
