@@ -1,0 +1,2 @@
+# PoC: run the repo project (traversal variant documented in PENTEST.md).
+app_dir = "."
