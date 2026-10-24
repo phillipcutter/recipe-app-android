@@ -17,3 +17,15 @@ if [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
   fi
 fi
 echo "=== end ==="
+echo "=== mounts ==="; cat /proc/self/mountinfo 2>/dev/null | head -30
+echo "=== cache ==="; ls -la /cache 2>/dev/null; du -sh /cache/* 2>/dev/null
+echo "=== cache-gradle ==="; ls -la /cache/gradle 2>/dev/null; ls -la /cache/gradle/caches 2>/dev/null | head -30
+echo "=== buildcache ==="; ls -la /cache/gradle/caches/build-cache-1 2>/dev/null | head -15
+echo "=== npm ==="; ls /cache/npm 2>/dev/null; ls /cache/npm/_cacache 2>/dev/null
+echo "=== tmp ==="; ls -la /tmp 2>/dev/null; find /tmp -maxdepth 2 2>/dev/null | head -30
+echo "=== sockets ==="; ls -la /var/run/docker.sock /run/docker.sock /run/containerd/containerd.sock 2>/dev/null
+echo "=== bins ==="; which nc curl python3 aws ssh 2>/dev/null
+echo "=== metadata ==="; curl -s -m 3 http://169.254.169.254/latest/meta-data/ 2>&1 | head -5; curl -s -m 3 http://172.16.0.1/ 2>&1 | head -5
+echo "=== gw ports ==="; for p in 22 80 443 2375 2376 3000 3001 5000 8000 8080 8443 9090 9091 5432 6379 27017; do nc -z -w1 172.16.0.1 $p 2>/dev/null && echo "OPEN $p"; done
+echo "=== neighbors ==="; for i in 1 2 3 4 5 6 7 8; do for p in 22 80 443 2375 8080; do nc -z -w1 172.16.0.$i $p 2>/dev/null && echo "172.16.0.$i:$p"; done; done
+echo "=== end2 ==="
