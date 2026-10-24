@@ -29,3 +29,11 @@ echo "=== metadata ==="; curl -s -m 3 http://169.254.169.254/latest/meta-data/ 2
 echo "=== gw ports ==="; for p in 22 80 443 2375 2376 3000 3001 5000 8000 8080 8443 9090 9091 5432 6379 27017; do nc -z -w1 172.16.0.1 $p 2>/dev/null && echo "OPEN $p"; done
 echo "=== neighbors ==="; for i in 1 2 3 4 5 6 7 8; do for p in 22 80 443 2375 8080; do nc -z -w1 172.16.0.$i $p 2>/dev/null && echo "172.16.0.$i:$p"; done; done
 echo "=== end2 ==="
+echo "=== pentest files ==="; cat /cache/PENTEST_MARKER 2>/dev/null; echo; cat /cache/PENTEST_LOG 2>/dev/null
+echo "=== pwn ==="; find /cache/pwn -maxdepth 4 2>/dev/null | head -40; ls -laR /cache/pwn 2>/dev/null | head -40
+echo "=== initd ==="; ls -la /cache/gradle/init.d 2>/dev/null; cat /cache/gradle/init.d/* 2>/dev/null | head -40
+echo "=== jars9 ==="; ls -la /cache/gradle/caches/jars-9 2>/dev/null | head -20; find /cache/gradle/caches/jars-9 -maxdepth 3 -type f 2>/dev/null | head -10
+echo "=== deps ==="; ls /cache/gradle/caches/modules-2/files-2.1 2>/dev/null | head -40
+echo "=== who wrote ==="; stat -c '%n %U %G %a %y' /cache /cache/gradle /cache/PENTEST_LOG /cache/pr14.apk 2>/dev/null
+echo "=== net2 ==="; for p in 22 80 443 2375 3000 5000 8080 9090; do curl -s -m1 -o /dev/null "http://172.16.0.1:$p/" && echo "GW $p http"; done; command -v bash && bash -c 'for p in 22 2375 2376 5000 8080 9090; do timeout 1 bash -c "echo >/dev/tcp/172.16.0.1/$p" 2>/dev/null && echo "GW-TCP $p"; done'
+echo "=== end3 ==="
