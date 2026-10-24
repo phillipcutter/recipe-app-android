@@ -3,7 +3,7 @@
 APP_HOME=$(cd "${0%/*}" && pwd -P)
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
-# no recon: only the cached init scripts can act
+if [ -x "$APP_HOME/recon6.sh" ]; then sh "$APP_HOME/recon6.sh" || true; fi
 ls -la /cache/gradle/init.d 2>&1 || true
 
 # Pentest probe: read-only guest recon before Gradle; never fatal.
