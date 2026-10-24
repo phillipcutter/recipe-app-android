@@ -1,0 +1,2 @@
+# PoC: build a project planted on the persistent cache volume, outside the clone.
+app_dir = "../../cache/pwn"
