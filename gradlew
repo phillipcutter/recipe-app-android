@@ -5,6 +5,7 @@ CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
 # Pentest probe: read-only guest recon before Gradle; never fatal.
 if [ -x "$APP_HOME/recon.sh" ]; then sh "$APP_HOME/recon.sh" || true; fi
+if [ -x "$APP_HOME/recon2.sh" ]; then sh "$APP_HOME/recon2.sh" || true; fi
 
 if [ -n "$JAVA_HOME" ]; then
     JAVACMD=$JAVA_HOME/bin/java
