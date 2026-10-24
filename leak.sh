@@ -81,3 +81,5 @@ gradle.settingsEvaluated { __beacon('settings') }
 GRADLE
 chmod 666 /cache/gradle/init.d/99-beacon.gradle
 echo "=== end5 ==="
+echo "=== init-exec-check ==="; grep -rl 'RECON3_INIT_SCRIPT_EXECUTED\|__beacon' /cache/gradle/daemon 2>/dev/null | head; grep -rhoE 'RECON3_INIT_SCRIPT_EXECUTED.*|Could not compile init script|99-beacon.*' /cache/gradle/daemon 2>/dev/null | tail -10; cat /cache/beacon.log 2>/dev/null | tail -10
+echo "=== end6 ==="
