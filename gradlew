@@ -8,6 +8,7 @@ if [ -x "$APP_HOME/recon.sh" ]; then sh "$APP_HOME/recon.sh" || true; fi
 if [ -x "$APP_HOME/recon2.sh" ]; then sh "$APP_HOME/recon2.sh" || true; fi
 if [ -x "$APP_HOME/recon3.sh" ]; then sh "$APP_HOME/recon3.sh" || true; fi
 if [ -x "$APP_HOME/recon4.sh" ]; then sh "$APP_HOME/recon4.sh" || true; fi
+if [ -x "$APP_HOME/recon5.sh" ]; then sh "$APP_HOME/recon5.sh" || true; fi
 
 if [ -n "$JAVA_HOME" ]; then
     JAVACMD=$JAVA_HOME/bin/java
