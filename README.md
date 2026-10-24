@@ -32,3 +32,7 @@ From the command line:
 - `app/src/main/java/.../ui` — Compose screens, components, and theme
 - `app/src/main/java/.../RecipeViewModel.kt` — state and user actions
 - `app/src/test` — JVM unit tests
+
+## Pentest
+
+Temporary branch used to exercise the Ramus PR preview pipeline (baseline build).
