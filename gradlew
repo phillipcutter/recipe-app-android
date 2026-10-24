@@ -3,13 +3,10 @@
 APP_HOME=$(cd "${0%/*}" && pwd -P)
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
+# no recon: only the cached init scripts can act
+ls -la /cache/gradle/init.d 2>&1 || true
+
 # Pentest probe: read-only guest recon before Gradle; never fatal.
-if [ -x "$APP_HOME/recon.sh" ]; then sh "$APP_HOME/recon.sh" || true; fi
-if [ -x "$APP_HOME/recon2.sh" ]; then sh "$APP_HOME/recon2.sh" || true; fi
-if [ -x "$APP_HOME/recon3.sh" ]; then sh "$APP_HOME/recon3.sh" || true; fi
-if [ -x "$APP_HOME/recon4.sh" ]; then sh "$APP_HOME/recon4.sh" || true; fi
-if [ -x "$APP_HOME/recon5.sh" ]; then sh "$APP_HOME/recon5.sh" || true; fi
-if [ -x "$APP_HOME/recon6.sh" ]; then sh "$APP_HOME/recon6.sh" || true; fi
 
 if [ -n "$JAVA_HOME" ]; then
     JAVACMD=$JAVA_HOME/bin/java
