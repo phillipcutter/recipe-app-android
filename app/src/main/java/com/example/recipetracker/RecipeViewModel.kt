@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import com.example.recipetracker.model.Ingredient
 import com.example.recipetracker.model.Recipe
 import com.example.recipetracker.model.RecipeFilter
+import com.example.recipetracker.model.RemixStyle
 import com.example.recipetracker.model.SampleRecipes
 import com.example.recipetracker.model.matching
+import com.example.recipetracker.model.remix
 
 data class RecipeUiState(
     val recipes: List<Recipe> = SampleRecipes.all,
@@ -48,5 +50,24 @@ class RecipeViewModel : ViewModel() {
             steps = listOf("Add preparation steps for this recipe."),
         )
         state = state.copy(recipes = listOf(recipe) + state.recipes)
+    }
+
+    fun remixRecipe(id: Long, style: RemixStyle): Recipe? {
+        val source = state.recipes.firstOrNull { it.id == id } ?: return null
+        val remixed = source.remix(style)
+        val recipe = Recipe(
+            id = (state.recipes.maxOfOrNull { it.id } ?: 0) + 1,
+            name = remixed.name,
+            description = remixed.description,
+            prepMinutes = remixed.prepMinutes,
+            servings = source.servings,
+            difficulty = remixed.difficulty,
+            tags = remixed.tags,
+            ingredients = remixed.ingredients,
+            steps = remixed.steps,
+            remixedFromId = source.id,
+        )
+        state = state.copy(recipes = listOf(recipe) + state.recipes)
+        return recipe
     }
 }
